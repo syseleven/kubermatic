@@ -109,6 +109,7 @@ upload "$archive"
 echodate "Uploading kubermatic EE archive..."
 
 yq w -i charts/kubermatic-operator/values.yaml 'kubermaticOperator.image.repository' 'quay.io/kubermatic/kubermatic-ee'
+cp pkg/ee/LICENSE LICENSE.ee
 
 archive="kubermatic-ee-$tag.tar.gz"
 tar czf "$archive" \
@@ -126,6 +127,7 @@ tar czf "$archive" \
   charts/oauth \
   charts/s3-exporter \
   LICENSE \
+  LICENSE.ee \
   README.md \
   CHANGELOG.md
 

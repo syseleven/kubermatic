@@ -462,11 +462,11 @@ type VSphereCloudSpec struct {
 	// Datastore is used for storing virtual machines, it is mutually exclusive
 	// with DatastoreCluster.
 	// +optional
-	Datastore string `json:"datastore"`
+	Datastore string `json:"datastore,omitempty"`
 	// DatastoreCluster is used for determining the datastore for virtual
 	// machine file placement, it is mutually exclusive with Datastore.
 	// +optional
-	DatastoreCluster string `json:"datastoreCluster"`
+	DatastoreCluster string `json:"datastoreCluster,omitempty"`
 
 	// This user will be used for everything except cloud provider functionality
 	InfraManagementUser VSphereCredentials `json:"infraManagementUser"`

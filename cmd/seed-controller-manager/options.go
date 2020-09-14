@@ -85,6 +85,7 @@ type controllerRunOptions struct {
 	seedValidationHook                               seedvalidation.WebhookOpts
 	concurrentClusterUpdate                          int
 	addonEnforceInterval                             int
+	defaultComponentSettings                         string
 
 	// OIDC configuration
 	oidcCAFile             string
@@ -149,6 +150,7 @@ func newControllerRunOptions() (controllerRunOptions, error) {
 	flag.IntVar(&c.schedulerDefaultReplicas, "scheduler-default-replicas", 1, "The default number of replicas for usercluster schedulers")
 	flag.IntVar(&c.concurrentClusterUpdate, "max-parallel-reconcile", 10, "The default number of resources updates per cluster")
 	flag.IntVar(&c.addonEnforceInterval, "addon-enforce-interval", 5, "Check and ensure default usercluster addons are deployed every interval in minutes. Set to 0 to disable.")
+	flag.StringVar(&c.defaultComponentSettings, "default-component-settings", "", "YAML file with default cluster component settings")
 	c.seedValidationHook.AddFlags(flag.CommandLine)
 	addFlags(flag.CommandLine)
 	flag.Parse()

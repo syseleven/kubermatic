@@ -145,6 +145,9 @@ spec:
         - -namespace=$(NAMESPACE)
         - -seed-admissionwebhook-cert-file=/opt/seed-webhook-serving-cert/serverCert.pem
         - -seed-admissionwebhook-key-file=/opt/seed-webhook-serving-cert/serverKey.pem
+        {{- if .Values.kubermatic.defaultComponentSettings }}
+        - -default-component-settings=/opt/cluster-default-component-settings/config.yaml
+        {{- end }}
         {{- if .Values.kubermatic.apiserverEndpointReconcilingDisabled }}
         - -apiserver-reconciling-disabled-by-default=true
         {{- else }}
@@ -163,6 +166,11 @@ spec:
           containerPort: 8085
           protocol: TCP
         volumeMounts:
+        {{- if .Values.kubermatic.defaultComponentSettings }}
+        - name: cluster-component-settings
+          mountPath: "/opt/cluster-default-component-settings/"
+          readOnly: true
+        {{- end }}
         {{- if .Values.kubermatic.auth.caBundle }}
         - name: dex-ca
           mountPath: "/opt/dex-ca/"
@@ -202,6 +210,11 @@ spec:
       imagePullSecrets:
       - name: dockercfg
       volumes:
+      {{- if .Values.kubermatic.defaultComponentSettings }}
+      - name: cluster-component-settings
+        configMap:
+          name: default-component-settings-{{ .Release.Name }}-{{ .Release.Revision }}
+      {{- end }}
       {{- if .Values.kubermatic.auth.caBundle }}
       - name: dex-ca
         secret:

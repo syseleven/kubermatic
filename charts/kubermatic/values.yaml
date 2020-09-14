@@ -55,6 +55,19 @@ kubermatic:
   schedulerDefaultReplicas: "1"
   maxParallelReconcile: "10"
 
+  # The default cluster components settings.
+  # Can be overriden on a per-cluster basis by setting .Spec.ComponentsOverride.
+  defaultComponentSettings:
+    apiserver:
+      replicas: 2
+      endpointReconcilingDisabled: false
+    controllerManager:
+      replicas: 1
+    scheduler:
+      replicas: 1
+    etcd:
+      replicas: 3
+
   # Whether to disable reconciling for the apiserver endpoints
   apiserverEndpointReconcilingDisabled: false
 

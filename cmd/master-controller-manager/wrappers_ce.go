@@ -25,6 +25,7 @@ import (
 
 	"go.uber.org/zap"
 
+	kubermaticv1 "k8c.io/kubermatic/v2/pkg/crd/kubermatic/v1"
 	"k8c.io/kubermatic/v2/pkg/provider"
 	seedvalidation "k8c.io/kubermatic/v2/pkg/validation/seed"
 
@@ -66,6 +67,7 @@ func setupSeedValidationWebhook(ctx context.Context, mgr manager.Manager, log *z
 			seedvalidation.SingleSeedValidateFunc(ctrlCtx.namespace),
 			validator.Validate,
 		),
+		kubermaticv1.ComponentSettings{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create seed validation webhook server: %v", err)

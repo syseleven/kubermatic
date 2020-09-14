@@ -25,6 +25,7 @@ import (
 	"os"
 
 	"github.com/go-logr/zapr"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
@@ -40,6 +41,7 @@ import (
 	"k8c.io/kubermatic/v2/pkg/util/restmapper"
 	seedvalidation "k8c.io/kubermatic/v2/pkg/validation/seed"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/yaml"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -188,11 +190,21 @@ Please install the VerticalPodAutoscaler according to the documentation: https:/
 		if err != nil {
 			log.Fatalw("failed to create seed validator webhook server: %v", zap.Error(err))
 		}
+		componentsSettings, err := defaultComponentSettings(
+			int32(options.apiServerDefaultReplicas),
+			int32(options.controllerManagerDefaultReplicas),
+			int32(options.schedulerDefaultReplicas),
+			options.apiServerEndpointReconcilingDisabled,
+			options.defaultComponentSettings)
+		if err != nil {
+			log.Fatalw("construct default components overrides", zap.Error(err))
+		}
 		seedValidationWebhookServer, err := options.seedValidationHook.Server(
 			rootCtx,
 			log,
 			options.namespace,
 			validator.Validate,
+			componentsSettings,
 		)
 		if err != nil {
 			log.Fatalw("Failed to get seedValidationWebhookServer", zap.Error(err))
@@ -240,4 +252,25 @@ Please install the VerticalPodAutoscaler according to the documentation: https:/
 func isInternalConfig(cfg *rest.Config) bool {
 	host, port := os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT")
 	return cfg.Host == "https://"+net.JoinHostPort(host, port)
+}
+
+// Constructs default components overrides for clusters. Uses settings file if given
+// and cli option values if not (to allow backward compatability).
+func defaultComponentSettings(apiReplicas, cmReplicas, schedulerReplicas int32, apiDisableEndpointReconcile bool, settingsFile string) (kubermaticv1.ComponentSettings, error) {
+	var ret kubermaticv1.ComponentSettings
+	if settingsFile != "" {
+		content, err := ioutil.ReadFile(settingsFile)
+		if err != nil {
+			return ret, errors.Wrap(err, "read components settings file")
+		}
+		if err := yaml.Unmarshal(content, &ret); err != nil {
+			return ret, errors.Wrap(err, "unmarshal components settings file")
+		}
+		return ret, nil
+	}
+	ret.Apiserver.Replicas = &apiReplicas
+	ret.Apiserver.EndpointReconcilingDisabled = &apiDisableEndpointReconcile
+	ret.ControllerManager.Replicas = &cmReplicas
+	ret.Scheduler.Replicas = &schedulerReplicas
+	return ret, nil
 }

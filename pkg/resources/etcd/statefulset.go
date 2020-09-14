@@ -339,11 +339,14 @@ func ImageTag(c *kubermaticv1.Cluster) string {
 }
 
 func computeReplicas(data etcdStatefulSetCreatorData, set *appsv1.StatefulSet) int {
-	etcdClusterSize := data.Cluster().Spec.ComponentsOverride.Etcd.ClusterSize
-	// handle existing clusters that don't have a configured size
-	if etcdClusterSize < kubermaticv1.DefaultEtcdClusterSize {
-		klog.V(2).Infof("etcdClusterSize [%d] is smaller than DefaultEtcdClusterSize [%d]. Falling back to DefaultEtcdClusterSize", etcdClusterSize, kubermaticv1.DefaultEtcdClusterSize)
-		etcdClusterSize = kubermaticv1.DefaultEtcdClusterSize
+	etcdClusterSize := kubermaticv1.DefaultEtcdClusterSize
+	if v := data.Cluster().Spec.ComponentsOverride.Etcd.Replicas; v != nil {
+		// handle existing clusters that don't have a configured size
+		if *v < kubermaticv1.DefaultEtcdClusterSize {
+			klog.V(2).Infof("etcdClusterSize [%d] is smaller than DefaultEtcdClusterSize [%d]. Falling back to DefaultEtcdClusterSize", etcdClusterSize, kubermaticv1.DefaultEtcdClusterSize)
+		} else {
+			etcdClusterSize = int(*v)
+		}
 	}
 	if etcdClusterSize > kubermaticv1.MaxEtcdClusterSize {
 		klog.V(2).Infof("etcdClusterSize [%d] is larger than MaxEtcdClusterSize [%d]. Falling back to MaxEtcdClusterSize", etcdClusterSize, kubermaticv1.MaxEtcdClusterSize)

@@ -315,8 +315,7 @@ type StatefulSetSettings struct {
 }
 
 type EtcdStatefulSetSettings struct {
-	ClusterSize int                          `json:"clusterSize,omitempty"`
-	Resources   *corev1.ResourceRequirements `json:"resources,omitempty"`
+	DeploymentSettings `json:",inline"`
 }
 
 // ClusterNetworkingConfig specifies the different networking
